@@ -1,78 +1,172 @@
 <?php
-/*
-Plugin Name: Family Access
-Version: 1.0.0
-Description: My Description
-Plugin URI: http://www.xovatec.de
-Author: XovaTex
-Author URI: http://www.xovatec.de
-*/
-if (!defined('PHPWG_ROOT_PATH'))
-{
-  die('Hacking attempt!');
+// ############################################################################
+// *
+// * Copyright (C) xt by hobutech
+// *
+// ############################################################################
+// *
+// * Plugin Name: Family Access
+// * Version: dev
+// * Description: access only after answering a question
+// * Plugin URI: http://www.xovatec.de
+// * Author: xt
+// * Author URI:
+// *
+// * http://www.hobutech.de
+// *
+// ****************************************************************************
+
+// Chech whether we are indeed included by Piwigo.
+if (defined('PHPWG_ROOT_PATH') === false) {
+    die('Hacking attempt!');
 }
 
-//include(PHPWG_ROOT_PATH.'include/section_init.inc.php');
+// Define the path to our plugin.
+define('FAMILY_ACCESS_PLUGIN_PATH', dirname(__FILE__) . DIRECTORY_SEPARATOR);
+define('FAMILY_ACCESS_TEMPLATE_PATH', FAMILY_ACCESS_PLUGIN_PATH . 'template' . DIRECTORY_SEPARATOR);
+define('FAMILY_ACCESS_INCLUDE_PATH', FAMILY_ACCESS_PLUGIN_PATH . 'include' . DIRECTORY_SEPARATOR);
+define('FAMILY_ACCESS_VIEW_PATH', FAMILY_ACCESS_PLUGIN_PATH . 'view' . DIRECTORY_SEPARATOR);
 
-class FamilyAccess
+include_once FAMILY_ACCESS_INCLUDE_PATH . 'FamilyAccessTemplateHelper.php';
+include_once FAMILY_ACCESS_VIEW_PATH . 'FamilyAccessQuestionView.php';
+
+/**
+ * class FamilyAccessApp
+ */
+class FamilyAccessApp
 {
-    public function checkAccess() {
-        global $page, $logger;
-        
-        //already logged on
+
+    /**
+     *
+     * @var boolean
+     */
+    private $loggedIn = false;
+
+    /**
+     *
+     * @var string
+     */
+    private $pageTitle;
+
+    /**
+     *
+     * @var string
+     */
+    private $imageUrl;
+
+    /**
+     *
+     * @var FamilyAccessQuestionView
+     */
+    private $view;
+
+    public function __construct()
+    {
+        $this->view = new FamilyAccessQuestionView();
+    }
+
+    /**
+     * Check access
+     *
+     * @return void
+     */
+    public function checkAccess()
+    {
+        global $page;
+
+        // already logged on
         if (array_key_exists('pwg_familyaccess_verify', $_SESSION) === true && $_SESSION['pwg_familyaccess_verify'] == true) {
+            $this->loggedIn = true;
             return;
         }
-        
-        //check if login succesful
-        if ( array_key_exists('city', $_POST) && strtolower(trim($_POST['city'])) === 'krefeld') {
-            $_SESSION['pwg_familyaccess_verify'] =  true;
+
+        // check if login succesful
+        if (array_key_exists('city', $_POST) && strtolower(trim($_POST['city'])) === 'krefeld') {
+            $_SESSION['pwg_familyaccess_verify'] = true;
             $uri = $_SESSION['pwg_familyaccess_forward_url'];
             if (strpos($uri, '/') === 0) {
                 $uri = substr($uri, 1);
             }
-            redirect(PHPWG_ROOT_PATH.$uri);
+            $this->loggedIn = true;
+            redirect(PHPWG_ROOT_PATH . $uri);
             return;
         }
-        
-        
+
         // build url to login and redirect
         if (strpos($_SERVER['REQUEST_URI'], 'access-question.php') === false) {
             $_SESSION['pwg_familyaccess_raw_title'] = 'Unsere Lumix';
-            $title = 'Unsere Lumix';
+            $this->pageTitle = 'Unsere Lumix';
             $_SESSION['pwg_familyaccess_raw_image'] = null;
-            $image = null;
+            $this->imageUrl = null;
             if (array_key_exists('category', $page) === true) {
                 if (array_key_exists('name', $page['category']) === true) {
                     $_SESSION['pwg_familyaccess_raw_title'] = $page['category']['name'];
-                    $title = $page['category']['name'];
+                    $this->pageTitle = $page['category']['name'];
                 }
                 if (array_key_exists('representative_picture_id', $page['category']) === true) {
                     $_SESSION['pwg_familyaccess_raw_image'] = $this->getImage($page['category']['representative_picture_id']);
-                    $image = $this->getImage($page['category']['representative_picture_id']);
+                    $this->imageUrl = $this->getImage($page['category']['representative_picture_id']);
                 }
             }
-            $_SESSION['pwg_familyaccess_forward_url']  = $_SERVER['REQUEST_URI'];
-            redirect(PHPWG_ROOT_PATH.'plugins/FamilyAccess/view/access-question.php?title='.urlencode($title).'&image='.urlencode($image));
+            $_SESSION['pwg_familyaccess_forward_url'] = $_SERVER['REQUEST_URI'];
+
+            if ($_SERVER['REQUEST_URI'] !== '/index.php') {
+                redirect(PHPWG_ROOT_PATH . 'index.php');
+            }
         }
-        
     }
-    
-    public function getImage($image_id) {
+
+    /**
+     * Get preview image url
+     *
+     * @param int $image_id
+     * @return string
+     */
+    public function getPreviewImage($image_id)
+    {
         $query = '
             SELECT id,representative_ext,path
-                FROM '.IMAGES_TABLE.'
-                WHERE id = '.$image_id.';';
-        
+                FROM ' . IMAGES_TABLE . '
+                WHERE id = ' . $image_id . ';';
+
         $row = pwg_db_fetch_assoc(pwg_query($query));
         $src = DerivativeImage::url(IMG_LARGE, $row);
-        //$url = get_root_url().'admin.php?page=photo-'.$image_id;
-        
-        return '/'.$src;
+
+        return '/' . $src;
+    }
+
+    public function createLoginTemplate()
+    {
+        if ($this->loggedIn == true) {
+            return;
+        }
+
+        $this->view->view($this->pageTitle, $this->imageUrl);
+    }
+
+    public function disableMenubar()
+    {
+        if ($this->loggedIn == true) {
+            return;
+        }
+
+        $this->view->disableMenubar();
     }
 }
 
-$myObj  =  new FamilyAccess ( ) ;
-add_event_handler ( 'loc_end_section_init' ,  Array ( &$myObj ,  'checkAccess' )  ) ;
-//add_event_handler ( 'init' ,  Array ( &$myObj ,  'checkAccess' )  ) ;
+$app = new FamilyAccessApp();
+add_event_handler('loc_end_section_init', array(
+    &$app,
+    'checkAccess'
+));
+
+add_event_handler('loc_end_index', array(
+    &$app,
+    'createLoginTemplate'
+));
+
+add_event_handler('loc_end_page_header', array(
+    &$app,
+    'disableMenubar'
+));
 ?>
