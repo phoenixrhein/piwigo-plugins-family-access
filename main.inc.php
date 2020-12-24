@@ -60,6 +60,9 @@ class FamilyAccessApp
      */
     private $view;
 
+    /**
+     * Constructor
+     */
     public function __construct()
     {
         $this->view = new FamilyAccessQuestionView();
@@ -135,6 +138,11 @@ class FamilyAccessApp
         return '/' . $src;
     }
 
+    /**
+     * Create login template
+     *
+     * @return void
+     */
     public function createLoginTemplate()
     {
         if ($this->loggedIn == true) {
@@ -144,6 +152,11 @@ class FamilyAccessApp
         $this->view->view($this->pageTitle, $this->imageUrl);
     }
 
+    /**
+     * Disable menubar
+     *
+     * @return void
+     */
     public function disableMenubar()
     {
         if ($this->loggedIn == true) {
