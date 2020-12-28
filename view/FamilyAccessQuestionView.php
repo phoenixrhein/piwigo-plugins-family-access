@@ -35,6 +35,12 @@ class FamilyAccessQuestionView
     private $imageUrl;
 
     /**
+     *
+     * @var string
+     */
+    private $url;
+
+    /**
      * Constructor
      */
     public function __construct()
@@ -49,10 +55,9 @@ class FamilyAccessQuestionView
      * @param string $imageUrl
      * @return void
      */
-    public function view($pageTitle, $imageUrl = null)
+    public function view($url = null)
     {
-        $this->title = $pageTitle;
-        $this->imageUrl = $imageUrl;
+        $this->url = $url;
         $this->disableCategoryListView();
 
         $filePath = FAMILY_ACCESS_TEMPLATE_PATH . 'access-question.tpl';
@@ -68,14 +73,15 @@ class FamilyAccessQuestionView
      */
     private function prepareUrl()
     {
+        if ($this->url !== null) {
+            return $this->url;
+        }
+
         $url = 'http';
         if (! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') {
             $url = 'https';
         }
         $url .= '://' . $_SERVER['HTTP_HOST'];
-        if (array_key_exists('pwg_familyaccess_forward_url', $_SESSION) === true && $_SESSION['pwg_familyaccess_forward_url'] != '') {
-            $url = $_SESSION['pwg_familyaccess_forward_url'];
-        }
 
         return $url;
     }
@@ -107,7 +113,8 @@ class FamilyAccessQuestionView
             'U_SLIDESHOW',
             'U_MODE_FLAT',
             'U_MODE_NORMAL',
-            'U_MODE_POSTED'
+            'U_MODE_POSTED',
+            'THUMBNAILS'
         ];
 
         $this->templateHelper->removeVariables($removeVariables);
@@ -121,7 +128,10 @@ class FamilyAccessQuestionView
     public function disableMenubar()
     {
         $this->templateHelper->getTemplate()->smarty->tpl_vars['MENUBAR'] = new Smarty_Variable('', false);
-        $this->setTitle();
+        if ($this->getTitle() != null) {
+            $this->setTemplateTitle();
+        }
+
         $this->setMetaTagImage();
     }
 
@@ -130,10 +140,11 @@ class FamilyAccessQuestionView
      *
      * @return void
      */
-    private function setTitle()
+    private function setTemplateTitle()
     {
-        $this->templateHelper->getTemplate()->assign('GALLERY_TITLE', 'Fotos der Familie HKS');
-        $this->templateHelper->getTemplate()->assign('PAGE_TITLE', $this->title);
+        $pageTitle = $this->templateHelper->getTemplate()->smarty->tpl_vars['PAGE_TITLE'];
+        $this->templateHelper->getTemplate()->assign('GALLERY_TITLE', $pageTitle);
+        $this->templateHelper->getTemplate()->assign('PAGE_TITLE', $this->getTitle());
     }
 
     /**
@@ -143,11 +154,11 @@ class FamilyAccessQuestionView
      */
     private function setMetaTagImage()
     {
-        if ($this->imageUrl == null) {
+        if ($this->getImageUrl() == null) {
             return;
         }
 
-        $url = 'https://' . $_SERVER['SERVER_NAME'] . $this->imageUrl;
+        $url = 'https://' . $_SERVER['SERVER_NAME'] . $this->getImageUrl();
         $headElements = [
             '<meta property="og:image" content="' . $url . '" />'
         ];
@@ -159,5 +170,41 @@ class FamilyAccessQuestionView
             ]);
         }
         $this->templateHelper->getTemplate()->assign('head_elements', $headElements);
+    }
+
+    /**
+     *
+     * @return string
+     */
+    public function getTitle()
+    {
+        return $this->title;
+    }
+
+    /**
+     *
+     * @param string $title
+     */
+    public function setTitle($title)
+    {
+        $this->title = $title;
+    }
+
+    /**
+     *
+     * @return string
+     */
+    public function getImageUrl()
+    {
+        return $this->imageUrl;
+    }
+
+    /**
+     *
+     * @param string $imageUrl
+     */
+    public function setImageUrl($imageUrl)
+    {
+        $this->imageUrl = $imageUrl;
     }
 }

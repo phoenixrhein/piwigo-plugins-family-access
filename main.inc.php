@@ -56,6 +56,12 @@ class FamilyAccessApp
 
     /**
      *
+     * @var string
+     */
+    private $forwardUri = '';
+
+    /**
+     *
      * @var FamilyAccessQuestionView
      */
     private $view;
@@ -68,6 +74,26 @@ class FamilyAccessApp
         $this->view = new FamilyAccessQuestionView();
     }
 
+    public function init()
+    {
+        if ($this->isLoggedIn() === true) {
+            return;
+        }
+
+        if (strpos($_SERVER['REQUEST_URI'], '/index.php') !== 0 && $_SERVER['REQUEST_URI'] != '/') {
+            redirect(PHPWG_ROOT_PATH . 'index.php?pageTitle=' . urlencode($this->pageTitle) . '&imageUrl=' . urlencode($this->imageUrl) . '&forwardUri=' . urlencode($_SERVER['REQUEST_URI']));
+        }
+    }
+
+    private function isLoggedIn()
+    {
+        if (array_key_exists('pwg_familyaccess_verify', $_SESSION) === true && $_SESSION['pwg_familyaccess_verify'] == true) {
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * Check access
      *
@@ -75,18 +101,21 @@ class FamilyAccessApp
      */
     public function checkAccess()
     {
-        global $page;
+        global $page, $conf;
 
         // already logged on
-        if (array_key_exists('pwg_familyaccess_verify', $_SESSION) === true && $_SESSION['pwg_familyaccess_verify'] == true) {
+        if ($this->isLoggedIn() === true) {
             $this->loggedIn = true;
             return;
         }
 
-        // check if login succesful
+        // check if login successful
         if (array_key_exists('city', $_POST) && strtolower(trim($_POST['city'])) === 'krefeld') {
             $_SESSION['pwg_familyaccess_verify'] = true;
-            $uri = $_SESSION['pwg_familyaccess_forward_url'];
+            if (array_key_exists('forwardUri', $_GET) === false) {
+                return;
+            }
+            $uri = $_GET['forwardUri'];
             if (strpos($uri, '/') === 0) {
                 $uri = substr($uri, 1);
             }
@@ -95,28 +124,37 @@ class FamilyAccessApp
             return;
         }
 
-        // build url to login and redirect
-        if (strpos($_SERVER['REQUEST_URI'], 'access-question.php') === false) {
-            $_SESSION['pwg_familyaccess_raw_title'] = 'Unsere Lumix';
-            $this->pageTitle = 'Unsere Lumix';
-            $_SESSION['pwg_familyaccess_raw_image'] = null;
-            $this->imageUrl = null;
-            if (array_key_exists('category', $page) === true) {
-                if (array_key_exists('name', $page['category']) === true) {
-                    $_SESSION['pwg_familyaccess_raw_title'] = $page['category']['name'];
-                    $this->pageTitle = $page['category']['name'];
-                }
-                if (array_key_exists('representative_picture_id', $page['category']) === true) {
-                    $_SESSION['pwg_familyaccess_raw_image'] = $this->getImage($page['category']['representative_picture_id']);
-                    $this->imageUrl = $this->getImage($page['category']['representative_picture_id']);
-                }
-            }
-            $_SESSION['pwg_familyaccess_forward_url'] = $_SERVER['REQUEST_URI'];
+        if (array_key_exists('pageTitle', $_GET) === true) {
+            $this->pageTitle = $_GET['pageTitle'];
+        }
 
-            if ($_SERVER['REQUEST_URI'] !== '/index.php') {
-                redirect(PHPWG_ROOT_PATH . 'index.php');
+        if (array_key_exists('imageUrl', $_GET) === true) {
+            $this->imageUrl = $_GET['imageUrl'];
+        }
+
+        if (array_key_exists('category', $page) === true) {
+            if ($this->pageTitle == null && array_key_exists('name', $page['category']) === true) {
+                $this->pageTitle = $page['category']['name'];
+            }
+            if ($this->imageUrl == null && array_key_exists('representative_picture_id', $page['category']) === true) {
+                $this->imageUrl = $this->getPreviewImage($page['category']['representative_picture_id']);
             }
         }
+
+        if ($this->pageTitle == null) {
+            $this->pageTitle = $conf['gallery_title'];
+        }
+
+        if (array_key_exists('forwardUri', $_GET) === true) {
+            $this->forwardUri = $_GET['forwardUri'];
+        }
+
+        if (strpos($_SERVER['REQUEST_URI'], '/index.php') !== 0 && $_SERVER['REQUEST_URI'] != '/') {
+            redirect(PHPWG_ROOT_PATH . 'index.php?pageTitle=' . urlencode($this->pageTitle) . '&imageUrl=' . urlencode($this->imageUrl) . '&forwardUri=' . urlencode($_SERVER['REQUEST_URI']));
+        }
+        
+        $this->view->setTitle($this->pageTitle);
+        $this->view->setImageUrl($this->imageUrl);
     }
 
     /**
@@ -125,7 +163,7 @@ class FamilyAccessApp
      * @param int $image_id
      * @return string
      */
-    public function getPreviewImage($image_id)
+    private function getPreviewImage($image_id)
     {
         $query = '
             SELECT id,representative_ext,path
@@ -149,7 +187,7 @@ class FamilyAccessApp
             return;
         }
 
-        $this->view->view($this->pageTitle, $this->imageUrl);
+        $this->view->view($this->forwardUri);
     }
 
     /**
@@ -168,6 +206,12 @@ class FamilyAccessApp
 }
 
 $app = new FamilyAccessApp();
+
+add_event_handler('init', array(
+    &$app,
+    'init'
+));
+
 add_event_handler('loc_end_section_init', array(
     &$app,
     'checkAccess'
