@@ -142,7 +142,7 @@ class FamilyAccessApp
         }
 
         if ($this->pageTitle == null) {
-            $this->pageTitle = $conf['gallery_title']; // @todo aus conf auslesen
+            $this->pageTitle = $conf['gallery_title'];
         }
 
         if (array_key_exists('forwardUri', $_GET) === true) {
@@ -152,6 +152,9 @@ class FamilyAccessApp
         if (strpos($_SERVER['REQUEST_URI'], '/index.php') !== 0 && $_SERVER['REQUEST_URI'] != '/') {
             redirect(PHPWG_ROOT_PATH . 'index.php?pageTitle=' . urlencode($this->pageTitle) . '&imageUrl=' . urlencode($this->imageUrl) . '&forwardUri=' . urlencode($_SERVER['REQUEST_URI']));
         }
+        
+        $this->view->setTitle($this->pageTitle);
+        $this->view->setImageUrl($this->imageUrl);
     }
 
     /**
@@ -184,7 +187,7 @@ class FamilyAccessApp
             return;
         }
 
-        $this->view->view($this->pageTitle, $this->imageUrl, $this->forwardUri);
+        $this->view->view($this->forwardUri);
     }
 
     /**

@@ -55,10 +55,8 @@ class FamilyAccessQuestionView
      * @param string $imageUrl
      * @return void
      */
-    public function view($pageTitle, $imageUrl = null, $url = null)
+    public function view($url = null)
     {
-        $this->title = $pageTitle;
-        $this->imageUrl = $imageUrl;
         $this->url = $url;
         $this->disableCategoryListView();
 
@@ -130,8 +128,8 @@ class FamilyAccessQuestionView
     public function disableMenubar()
     {
         $this->templateHelper->getTemplate()->smarty->tpl_vars['MENUBAR'] = new Smarty_Variable('', false);
-        if ($this->title != null) {
-            $this->setTitle();
+        if ($this->getTitle() != null) {
+            $this->setTemplateTitle();
         }
 
         $this->setMetaTagImage();
@@ -142,11 +140,11 @@ class FamilyAccessQuestionView
      *
      * @return void
      */
-    private function setTitle()
+    private function setTemplateTitle()
     {
         $pageTitle = $this->templateHelper->getTemplate()->smarty->tpl_vars['PAGE_TITLE'];
         $this->templateHelper->getTemplate()->assign('GALLERY_TITLE', $pageTitle);
-        $this->templateHelper->getTemplate()->assign('PAGE_TITLE', $this->title);
+        $this->templateHelper->getTemplate()->assign('PAGE_TITLE', $this->getTitle());
     }
 
     /**
@@ -156,11 +154,11 @@ class FamilyAccessQuestionView
      */
     private function setMetaTagImage()
     {
-        if ($this->imageUrl == null) {
+        if ($this->getImageUrl() == null) {
             return;
         }
 
-        $url = 'https://' . $_SERVER['SERVER_NAME'] . $this->imageUrl;
+        $url = 'https://' . $_SERVER['SERVER_NAME'] . $this->getImageUrl();
         $headElements = [
             '<meta property="og:image" content="' . $url . '" />'
         ];
@@ -172,5 +170,41 @@ class FamilyAccessQuestionView
             ]);
         }
         $this->templateHelper->getTemplate()->assign('head_elements', $headElements);
+    }
+
+    /**
+     *
+     * @return string
+     */
+    public function getTitle()
+    {
+        return $this->title;
+    }
+
+    /**
+     *
+     * @param string $title
+     */
+    public function setTitle($title)
+    {
+        $this->title = $title;
+    }
+
+    /**
+     *
+     * @return string
+     */
+    public function getImageUrl()
+    {
+        return $this->imageUrl;
+    }
+
+    /**
+     *
+     * @param string $imageUrl
+     */
+    public function setImageUrl($imageUrl)
+    {
+        $this->imageUrl = $imageUrl;
     }
 }
