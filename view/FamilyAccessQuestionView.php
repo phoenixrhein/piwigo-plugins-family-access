@@ -63,6 +63,8 @@ class FamilyAccessQuestionView
         $filePath = FAMILY_ACCESS_TEMPLATE_PATH . 'access-question.tpl';
         $this->templateHelper->getTemplate()->set_filename('accessquestion', $filePath);
         $this->templateHelper->getTemplate()->assign('url', $this->prepareUrl());
+        $this->templateHelper->getTemplate()->assign('question', FamilyAccessConfig::$question);
+        $this->templateHelper->getTemplate()->assign('answerPlaceholder', FamilyAccessConfig::$answerPlaceholder);
         $this->templateHelper->getTemplate()->assign_var_from_handle('CATEGORIES', 'accessquestion');
     }
 

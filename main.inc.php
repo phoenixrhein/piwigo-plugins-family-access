@@ -27,6 +27,7 @@ define('FAMILY_ACCESS_TEMPLATE_PATH', FAMILY_ACCESS_PLUGIN_PATH . 'template' . D
 define('FAMILY_ACCESS_INCLUDE_PATH', FAMILY_ACCESS_PLUGIN_PATH . 'include' . DIRECTORY_SEPARATOR);
 define('FAMILY_ACCESS_VIEW_PATH', FAMILY_ACCESS_PLUGIN_PATH . 'view' . DIRECTORY_SEPARATOR);
 
+include_once FAMILY_ACCESS_PLUGIN_PATH . 'FamilyAccessConfig.php';
 include_once FAMILY_ACCESS_INCLUDE_PATH . 'FamilyAccessTemplateHelper.php';
 include_once FAMILY_ACCESS_VIEW_PATH . 'FamilyAccessQuestionView.php';
 
@@ -110,7 +111,7 @@ class FamilyAccessApp
         }
 
         // check if login successful
-        if (array_key_exists('city', $_POST) && strtolower(trim($_POST['city'])) === 'krefeld') {
+        if (array_key_exists('answer', $_POST) && strtolower(trim($_POST['answer'])) === strtolower(FamilyAccessConfig::$answer)) {
             $_SESSION['pwg_familyaccess_verify'] = true;
             if (array_key_exists('forwardUri', $_GET) === false) {
                 return;
