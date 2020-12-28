@@ -5,9 +5,9 @@
         </h4>
         <div class="card-body">
             <div class="form-group">
-                <label for="username" class="col-sm-2 control-label">Beantworte uns eine Frage: In welcher Stadt wohnt Familie HKS?</label>
+                <label for="username" class="col-sm-2 control-label">Beantworte uns eine Frage: {$question}</label>
                 <div class="col-sm-4">
-                    <input tabindex="1" class="form-control" type="text" name="city" id="city" placeholder="Stadt">
+                    <input tabindex="1" class="form-control" type="text" name="answer" placeholder="{$answerPlaceholder}">
                 </div>
             </div>
             <div class="form-group">
