@@ -75,6 +75,11 @@ class FamilyAccessApp
         $this->view = new FamilyAccessQuestionView();
     }
 
+    /**
+     * Init
+     * 
+     * @return void
+     */
     public function init()
     {
         if ($this->isLoggedIn() === true) {
@@ -86,6 +91,11 @@ class FamilyAccessApp
         }
     }
 
+    /**
+     * Is logged in
+     * 
+     * @return boolean
+     */
     private function isLoggedIn()
     {
         if (array_key_exists('pwg_familyaccess_verify', $_SESSION) === true && $_SESSION['pwg_familyaccess_verify'] == true) {
@@ -113,6 +123,7 @@ class FamilyAccessApp
         // check if login successful
         if (array_key_exists('answer', $_POST) && strtolower(trim($_POST['answer'])) === strtolower(FamilyAccessConfig::$answer)) {
             $_SESSION['pwg_familyaccess_verify'] = true;
+            $this->loggedIn = true;
             if (array_key_exists('forwardUri', $_GET) === false) {
                 return;
             }
@@ -120,7 +131,7 @@ class FamilyAccessApp
             if (strpos($uri, '/') === 0) {
                 $uri = substr($uri, 1);
             }
-            $this->loggedIn = true;
+            
             redirect(PHPWG_ROOT_PATH . $uri);
             return;
         }
