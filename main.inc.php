@@ -39,12 +39,6 @@ class FamilyAccessApp
 
     /**
      *
-     * @var boolean
-     */
-    private $loggedIn = false;
-
-    /**
-     *
      * @var string
      */
     private $pageTitle;
@@ -75,6 +69,11 @@ class FamilyAccessApp
         $this->view = new FamilyAccessQuestionView();
     }
 
+    /**
+     * Init
+     * 
+     * @return void
+     */
     public function init()
     {
         if ($this->isLoggedIn() === true) {
@@ -86,6 +85,11 @@ class FamilyAccessApp
         }
     }
 
+    /**
+     * Is logged in
+     * 
+     * @return boolean
+     */
     private function isLoggedIn()
     {
         if (array_key_exists('pwg_familyaccess_verify', $_SESSION) === true && $_SESSION['pwg_familyaccess_verify'] == true) {
@@ -106,7 +110,6 @@ class FamilyAccessApp
 
         // already logged on
         if ($this->isLoggedIn() === true) {
-            $this->loggedIn = true;
             return;
         }
 
@@ -120,7 +123,7 @@ class FamilyAccessApp
             if (strpos($uri, '/') === 0) {
                 $uri = substr($uri, 1);
             }
-            $this->loggedIn = true;
+            
             redirect(PHPWG_ROOT_PATH . $uri);
             return;
         }
@@ -184,7 +187,7 @@ class FamilyAccessApp
      */
     public function createLoginTemplate()
     {
-        if ($this->loggedIn == true) {
+        if ($this->isLoggedIn() == true) {
             return;
         }
 
@@ -198,7 +201,7 @@ class FamilyAccessApp
      */
     public function disableMenubar()
     {
-        if ($this->loggedIn == true) {
+        if ($this->isLoggedIn() == true) {
             return;
         }
 
