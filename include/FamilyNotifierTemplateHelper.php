@@ -11,26 +11,19 @@ if (defined('PHPWG_ROOT_PATH') === false) {
 }
 
 /**
- * class FamilyAccessConfig
+ * class FamilyNotifierTemplateHelper
  */
-class FamilyAccessConfig
+class FamilyNotifierTemplateHelper
 {
 
     /**
+     * Get the smarty template object
      *
-     * @var string
+     * @return Template
      */
-    public static $question = '';
-
-    /**
-     *
-     * @var string
-     */
-    public static $answer = '';
-    
-    /**
-     *
-     * @var string
-     */
-    public static $answerPlaceholder = '';
+    public function getTemplate()
+    {
+        global $template;
+        return $template;
+    }
 }

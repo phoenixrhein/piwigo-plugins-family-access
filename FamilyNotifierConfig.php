@@ -27,10 +27,4 @@ class FamilyAccessConfig
      * @var string
      */
     public static $answer = '';
-    
-    /**
-     *
-     * @var string
-     */
-    public static $answerPlaceholder = '';
 }
