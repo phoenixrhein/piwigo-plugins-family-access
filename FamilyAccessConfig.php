@@ -20,17 +20,17 @@ class FamilyAccessConfig
      *
      * @var string
      */
-    public static $question = 'In welcher Stadt wohnt Familie (ehemals) HKS?';
+    public static $question = '';
 
     /**
      *
      * @var string
      */
-    public static $answer = 'Krefeld';
+    public static $answer = '';
     
     /**
      *
      * @var string
      */
-    public static $answerPlaceholder = 'Stadt';
+    public static $answerPlaceholder = '';
 }
