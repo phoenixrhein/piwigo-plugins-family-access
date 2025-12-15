@@ -10,6 +10,8 @@ if (defined('PHPWG_ROOT_PATH') === false) {
     die('Hacking attempt!');
 }
 
+use Smarty\Variable;
+
 /**
  * class FamilyAccessQuestionView
  */
@@ -129,7 +131,7 @@ class FamilyAccessQuestionView
      */
     public function disableMenubar()
     {
-        $this->templateHelper->getTemplate()->smarty->tpl_vars['MENUBAR'] = new Smarty_Variable('', false);
+        $this->templateHelper->getTemplate()->smarty->tpl_vars['MENUBAR'] = new Variable('', false);
         if ($this->getTitle() != null) {
             $this->setTemplateTitle();
         }
