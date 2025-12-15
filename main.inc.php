@@ -81,7 +81,7 @@ class FamilyAccessApp
         }
 
         if (strpos($_SERVER['REQUEST_URI'], '/index.php') !== 0 && $_SERVER['REQUEST_URI'] != '/') {
-            redirect(PHPWG_ROOT_PATH . 'index.php?pageTitle=' . urlencode($this->pageTitle) . '&imageUrl=' . urlencode($this->imageUrl) . '&forwardUri=' . urlencode($_SERVER['REQUEST_URI']));
+            redirect(PHPWG_ROOT_PATH . 'index.php?pageTitle=' . empty($this->pageTitle) === true ? '' : urlencode($this->pageTitle) . '&imageUrl=' . urlencode($this->imageUrl) . '&forwardUri=' . urlencode($_SERVER['REQUEST_URI']));
         }
     }
 
